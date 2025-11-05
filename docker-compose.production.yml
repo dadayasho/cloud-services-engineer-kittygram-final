@@ -5,8 +5,6 @@ services:
     container_name: gateway
     depends_on:
       - frontend
-        
-
     volumes:
       - static:/backend/static
       - media:/backend/media  
@@ -20,6 +18,7 @@ services:
     depends_on: 
         postgres:
           condition: service_healthy
+    restart: always
     container_name: backend
     environment:
      - DB_HOST=${DB_HOST}
@@ -32,6 +31,10 @@ services:
       - media:/backend/media 
     ports:
       - 8000:8000
+    links:
+      - "postgres:postgres"
+    env_file:
+      - .env
     networks:
       - appBridge
 
@@ -51,12 +54,12 @@ services:
     image: postgres:13
     container_name: postgres
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - PGDATA=/var/lib/postgresql/data/pgdata
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ./pg_data:/var/lib/postgresql/data/pgdata
+      - pg_data:/var/lib/postgresql/data/pgdata
     ports:
       - 5432:5432
     networks:
@@ -66,6 +69,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    env_file:
+      - .env
 
 volumes:
   static:
