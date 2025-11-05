@@ -3,6 +3,10 @@ services:
   gateway:
     image: tonysoprano228/kittygram_gateway:latest
     container_name: gateway
+    depends_on:
+      - frontend
+        
+
     volumes:
       - static:/backend/static
       - media:/backend/media  
@@ -14,7 +18,8 @@ services:
   backend:
     image: tonysoprano228/kittygram_backend:latest
     depends_on: 
-      - postgres
+        postgres:
+          condition: service_healthy
     container_name: backend
     environment:
      - DB_HOST=${DB_HOST}
@@ -33,6 +38,8 @@ services:
   frontend:
     image: tonysoprano228/kittygram_frontend:latest
     container_name: frontend
+    depends_on:
+      - backend
     volumes:
       - static:/app/static     
     ports:
@@ -51,9 +58,14 @@ services:
     volumes:
       - ./pg_data:/var/lib/postgresql/data/pgdata
     ports:
-      - "5432:5432"
+      - 5432:5432
     networks:
       - appBridge
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   static:
