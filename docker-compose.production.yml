@@ -4,8 +4,8 @@ services:
     image: tonysoprano228/kittygram_gateway:latest
     container_name: gateway
     volumes:
-      - ./static:/backend/static
-      - ./media:/backend/media  
+      - static:/backend/static
+      - media:/backend/media  
     ports:
       - 80:80
     networks:
@@ -13,6 +13,8 @@ services:
 
   backend:
     image: tonysoprano228/kittygram_backend:latest
+    depends_on: 
+      - postgres
     container_name: backend
     environment:
      - DB_HOST=${DB_HOST}
@@ -21,8 +23,8 @@ services:
      - DB_USER=${DB_USER}
      - DB_PASSWORD=${DB_PASSWORD}
     volumes:
-      - ./static:static
-      - ./media:media 
+      - static:/backend/static
+      - media:/backend/media 
     ports:
       - 8000:8000
     networks:
@@ -32,7 +34,7 @@ services:
     image: tonysoprano228/kittygram_frontend:latest
     container_name: frontend
     volumes:
-      - ./static:/app/static     
+      - static:/app/static     
     ports:
       - 8001:8000
     networks:
