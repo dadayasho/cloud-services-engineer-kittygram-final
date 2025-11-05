@@ -1,8 +1,8 @@
 version: '3.9'
 services:
   gateway:
-    image: tonysoprano228/kittygram_gateway
-    container_name: kittygram_gateway
+    image: tonysoprano228/kittygram_gateway:latest
+    container_name: gateway
     volumes:
       - ./static:/backend/static
       - ./media:/backend/media  
@@ -12,8 +12,8 @@ services:
       - appBridge
 
   backend:
-    image: tonysoprano228/kittygram_backend
-    container_name: kittygram_backend
+    image: tonysoprano228/kittygram_backend:latest
+    container_name: backend
     environment:
      - DB_HOST=${DB_HOST}
      - DB_PORT=${DB_PORT}
@@ -29,8 +29,8 @@ services:
       - appBridge
 
   frontend:
-    image: tonysoprano228/kittygram_frontend
-    container_name: kittygram_frontend
+    image: tonysoprano228/kittygram_frontend:latest
+    container_name: frontend
     volumes:
       - ./static:/app/static     
     ports:
@@ -40,7 +40,7 @@ services:
 
   postgres:
     image: postgres:13
-    container_name: postgres:13
+    container_name: postgres
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
