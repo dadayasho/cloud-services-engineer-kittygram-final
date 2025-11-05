@@ -11,6 +11,8 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Update pip
+      run: python3 -m pip install --upgrade pip
 
     - name: Install dependencies
       run: |
