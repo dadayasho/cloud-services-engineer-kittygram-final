@@ -18,10 +18,15 @@ jobs:
       run: |
            cd backend && pip install -r requirements.txt
       
+    - name: Install pep8  
+      run: pip install pep8
+
     - name: Run pep8
       run: |
            cd backend && pep8 .
 
-
+    - name: Install pytest
+      run: pip install pytest
+      
     - name: Run tests
       run:  pytest tests/
