@@ -1,23 +1,30 @@
 version: '3.9'
 services:
-  services:
+  
   db:
-    image: postgres:13
+    image: postgres:13.10
+    container_name: postgres
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
+    networks:
+      - app-bridge
   backend:
     image: tonysoprano228/kittygram_backend:latest
     env_file: .env
     volumes:
       - static:/static/
       - media:/app/media/
+    networks:
+      - app-bridge
   frontend:
     env_file: .env
     image: tonysoprano228/kittygram_frontend:latest
-    command: cp -r /app/build/. /static/
+    #command: cp -r /app/build/. /static/
     volumes:
       - static:/static
+    networks:
+      - app-bridge
   gateway:
     image: tonysoprano228/kittygram_gateway:latest
     env_file: .env
@@ -26,8 +33,14 @@ services:
     volumes:
       - static:/static
       - media:/app/media/
+    networks:
+      - app-bridge
 
 volumes:
   static:
   media:
   pg_data:
+
+networks:
+  app-bridge:
+    driver: bridge
