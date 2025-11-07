@@ -26,10 +26,10 @@ jobs:
            cd backend && pycodestyle --max-line-length=120 .
       continue-on-error: true
 
-    - name: Install pytest
+    - name: Install pytest # удалить и перемести во вкладку с тестами
       run: pip install pytest
 
-    - name: Run tests
+    - name: Run tests # удалить и перемести во вкладку с тестами
       run:  cd backend && pytest ../tests
       continue-on-error: true
   
@@ -61,3 +61,42 @@ jobs:
             cd nginx
             docker build . -t tonysoprano228/kittygram_gateway
             docker push tonysoprano228/kittygram_gateway
+
+    deploy:
+    runs-on: ubuntu-latest
+    needs: 
+      # Дождёмся билда всех фронтенда, бэкенда и гейтвея:
+      - push_to_registry
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+    # Копируем docker-compose.production.yml на продакшен-сервер:
+    - name: Copy docker-compose.yml via ssh
+      uses: appleboy/scp-action@master
+    # Передаём параметры для action appleboy/scp-action:
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        #passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        source: "docker-compose.production.yml"
+        target: "kittygram"
+    - name: Executing remote ssh commands to deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        
+        script: |
+          cd /kittygram
+          
+          sudo docker compose -f docker-compose.production.yml pull
+         
+          sudo docker compose -f docker-compose.production.yml down
+          sudo docker compose -f docker-compose.production.yml up -d
+          
+          sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+          sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+          
