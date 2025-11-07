@@ -88,7 +88,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd /kittygram
+            cd kittygram
             
             sudo docker compose -f docker-compose.production.yml pull
           
@@ -97,4 +97,3 @@ jobs:
             
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
-            
