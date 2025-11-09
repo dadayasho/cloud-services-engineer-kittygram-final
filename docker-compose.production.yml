@@ -21,6 +21,8 @@ services:
   frontend:
     env_file: .env
     image: tonysoprano228/kittygram_frontend:latest 
+    depends_on:
+      - backend
     command: cp -r /app/build/. /static/
     volumes:
       - static:/static
