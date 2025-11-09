@@ -20,7 +20,7 @@ services:
     
   frontend:
     env_file: .env
-    image: tonysoprano228/kittygram_frontend:latest
+    image: tonysoprano228/kittygram_frontend:latest 
     command: cp -r /app/build/. /static/
     volumes:
       - static:/static
