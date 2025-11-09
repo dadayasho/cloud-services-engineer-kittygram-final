@@ -14,7 +14,7 @@ services:
       - postgres
     env_file: .env
     volumes:
-      - static:/static
+      - static:/backend_static
       - media:/app/media
    
     
