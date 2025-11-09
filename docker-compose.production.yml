@@ -10,10 +10,12 @@ services:
     
   backend:
     image: tonysoprano228/kittygram_backend:latest
+    depend_on:
+      - postgres
     env_file: .env
     volumes:
-      - static:/static/
-      - media:/app/media/
+      - static:/static
+      - media:/app/media
    
     
   frontend:
@@ -26,12 +28,14 @@ services:
 
   gateway:
     image: tonysoprano228/kittygram_gateway:latest
+    depend_on:
+      - backend
     env_file: .env
     ports:
       - 9000:80
     volumes:
       - static:/static
-      - media:/app/media/
+      - media:/app/media
     
 
 volumes:
