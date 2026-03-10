@@ -103,7 +103,7 @@ jobs:
             DB_PORT=5432
             SECRET_KEY = '${{ secrets.DJANGO_SECRET }}'
             DEBUG = True
-            ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0, ${{ env.HOST_IP }}
+            ALLOWED_HOSTS='localhost,127.0.0.1,0.0.0.0,${{ env.HOST_IP }}'
             EOF
 
       - name: Executing remote ssh commands to deploy
