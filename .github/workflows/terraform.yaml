@@ -13,7 +13,7 @@ on:
         - destroy
 
 env:
-  TF_VERSION: '1.9.5'
+  TF_VERSION: '1.14.6'
   YC_CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}
   YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
   YC_TOKEN: ${{ secrets.YC_TOKEN }}
