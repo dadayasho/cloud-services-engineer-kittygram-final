@@ -40,12 +40,20 @@ jobs:
       
     - name: Terraform Plan
       if: inputs.action == 'plan'
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ru-central1
       run: |
         cd infrastructure/vm
         terraform plan -var="cloud_id=${{ env.YC_CLOUD_ID }}" -var="folder_id=${{ env.YC_FOLDER_ID }}" -var="token=${{ env.YC_TOKEN }}"
       
     - name: Terraform Apply
       if: inputs.action == 'apply'
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ru-central1
       run: |
         cd infrastructure/vm
         terraform apply -auto-approve -var="cloud_id=${{ env.YC_CLOUD_ID }}" -var="folder_id=${{ env.YC_FOLDER_ID }}" -var="token=${{ env.YC_TOKEN }}"
@@ -67,6 +75,10 @@ jobs:
     
     - name: Terraform Destroy
       if: inputs.action == 'destroy'
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ru-central1
       run: |
         cd infrastructure/vm
         terraform destroy -auto-approve -var="cloud_id=${{ env.YC_CLOUD_ID }}" -var="folder_id=${{ env.YC_FOLDER_ID }}" -var="token=${{ env.YC_TOKEN }}"
