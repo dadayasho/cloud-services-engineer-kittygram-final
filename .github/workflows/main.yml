@@ -139,7 +139,7 @@ jobs:
         run: |
           echo "HOST_IP=${{ github.event.client_payload.vm_ip }}" >> $GITHUB_ENV
           echo "SHA: ${{ github.event.client_payload.sha }}"
-          echo "Ref: ${{ github.event.client_payload.ref }}
+          echo "Ref: ${{ github.event.client_payload.ref }}"
 
       - name: Replace IP in tests.yml
         run: sed -i "s|{HOST_IP}|${{ env.HOST_IP }}|g" tests.yml
