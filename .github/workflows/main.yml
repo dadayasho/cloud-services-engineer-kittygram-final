@@ -142,7 +142,7 @@ jobs:
           echo "Ref: ${{ github.event.client_payload.ref }}"
 
       - name: Replace IP in tests.yml
-        run: sed -i "s|{HOST_IP}|${{ env.HOST_IP }}|g" tests.yml
+        run: sed -i "s|HOST_IP|${{ env.HOST_IP }}|g" tests.yml
 
       - name: Run tests
         run:  cd backend && pytest ../tests
