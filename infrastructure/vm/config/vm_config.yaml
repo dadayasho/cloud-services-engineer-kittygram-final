@@ -1,0 +1,29 @@
+#cloud-config
+ssh_pwauth: no
+users:
+  - name: maxim
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: [docker, sudo]
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - "${{ secrets.SSH_KEY }}"
+
+apt:
+  sources:
+    docker.list:
+      source: deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+
+packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-compose-plugin
+
+write_files:
+  - path: /etc/sysctl.d/enabled_ipv4_forwarding.conf
+    content: |
+      net.ipv4.conf.all.forwarding=1
+
+groups:
+  - docker

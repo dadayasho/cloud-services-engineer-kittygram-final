@@ -2,3 +2,11 @@
 .DS_Store
 
 .env
+
+infrastructure/vm/.terraform*
+
+infrastructure/vm/var.tfvars
+
+infrastructure/bucket/terraform*
+infrastructure/bucket/.terraform*
+infrastructure/bucket/var.tfvars

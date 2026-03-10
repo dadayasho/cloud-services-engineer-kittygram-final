@@ -1,0 +1,71 @@
+name: Terraform
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+        - plan
+        - apply
+        - destroy
+
+env:
+  TF_VERSION: '1.9.5'
+  YC_CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}
+  YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}
+  YC_TOKEN: ${{ secrets.YC_TOKEN }}
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+        
+    - name: Terraform Init
+      run: |
+        cd infrastructure/vm
+        export AWS_ACCESS_KEY_ID= "${{ secrets.AWS_ACCESS_KEY_ID }}"
+        export AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+        export AWS_DEFAULT_REGION="ru-central1"
+        terraform init
+      
+    - name: Terraform Plan
+      if: inputs.action == 'plan'
+      run: |
+        cd infrastructure/vm
+        terraform plan -var="cloud_id=${{ env.YC_CLOUD_ID }}" -var="folder_id=${{ env.YC_FOLDER_ID }}" -var="token=${{ env.YC_TOKEN }}"
+      
+    - name: Terraform Apply
+      if: inputs.action == 'apply'
+      run: |
+        cd infrastructure/vm
+        terraform apply -auto-approve -var="cloud_id=${{ env.YC_CLOUD_ID }}" -var="folder_id=${{ env.YC_FOLDER_ID }}" -var="token=${{ env.YC_TOKEN }}"
+        
+    - name: Extract VM IP
+      id: vm_ip
+      if: inputs.action == 'apply'
+      run: |
+        cd infrastructure/vm
+        IP=$(terraform output -raw ip_address)
+        echo $IP > ./vm_ip.txt
+
+    - name: Upload VM IP Artifact
+      if: inputs.action == 'apply'
+      uses: actions/upload-artifact@v4
+      with:
+        name: vm-ip
+        path: ./vm_ip.txt
+    
+    - name: Terraform Destroy
+      if: inputs.action == 'destroy'
+      run: |
+        cd infrastructure/vm
+        terraform destroy -auto-approve -var="cloud_id=${{ env.YC_CLOUD_ID }}" -var="folder_id=${{ env.YC_FOLDER_ID }}" -var="token=${{ env.YC_TOKEN }}"
