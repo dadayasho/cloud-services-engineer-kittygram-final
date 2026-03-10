@@ -57,9 +57,9 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: ru-central1
-        TF_VAR_ssh_public_key: ${{ secrets.SSH_KEY }}
       run: |
         cd infrastructure/vm
+        sed -i "s|{ssh_public_key}|${{ secrets.SSH_KEY }}|g" config/vm_config.yaml
         terraform apply -auto-approve -var="cloud_id=${{ env.YC_CLOUD_ID }}" -var="folder_id=${{ env.YC_FOLDER_ID }}" -var="token=${{ env.YC_TOKEN }}"
         
     - name: Extract VM IP
