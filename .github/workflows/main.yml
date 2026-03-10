@@ -101,7 +101,7 @@ jobs:
             DB_NAME=kittygram
             DB_HOST=postgres
             DB_PORT=5432
-            SECRET_KEY = ${{ secrets.DJANGO_SECRET_KEY }}
+            SECRET_KEY = '${{ secrets.DJANGO_SECRET }}'
             DEBUG = True
             ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0, ${{ env.HOST_IP }}
             EOF
@@ -131,11 +131,19 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+
       - name: Install pytest
         run: pip install pytest
 
+      - name: Get VM IP from Terraform
+        run: |
+          echo "HOST_IP=${{ github.event.client_payload.vm_ip }}" >> $GITHUB_ENV
+          echo "SHA: ${{ github.event.client_payload.sha }}"
+          echo "Ref: ${{ github.event.client_payload.ref }}
+
       - name: Replace IP in tests.yml
         run: sed -i "s|{HOST_IP}|${{ env.HOST_IP }}|g" tests.yml
+
       - name: Run tests
         run:  cd backend && pytest ../tests
 
