@@ -60,6 +60,13 @@ jobs:
         
     - name: Extract VM IP
       id: vm_ip
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: ru-central1
+        YC_CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}     
+        YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}  
+        YC_TOKEN: ${{ secrets.YC_TOKEN }}
       if: inputs.action == 'apply'
       run: |
         cd infrastructure/vm
