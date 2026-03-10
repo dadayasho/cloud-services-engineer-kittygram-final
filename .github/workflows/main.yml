@@ -68,18 +68,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
       
-      # артефакт в корень
-      - name: Download VM IP
-        uses: actions/download-artifact@v4
-        with:
-          name: vm-ip
-          path: ./
-      # Вычленим IP вмки
-      - name: Read VM IP
-        id: read_ip
+      - name: Get VM IP from Terraform
         run: |
-          IP=$(cat infrastructure/vm/vm_ip.txt)
-          echo "HOST_IP=$IP" >> $GITHUB_ENV
+          echo "HOST_IP=${{ github.event.client_payload.vm_ip }}" >> $GITHUB_ENV
+          echo "SHA: ${{ github.event.client_payload.sha }}"
+          echo "Ref: ${{ github.event.client_payload.ref }}"
+      
       # Копируем docker-compose.production.yml на продакшен-сервер:
       - name: Copy docker-compose.yml via ssh
         uses: appleboy/scp-action@master
@@ -140,18 +134,6 @@ jobs:
         uses: actions/checkout@v3
       - name: Install pytest
         run: pip install pytest
-
-      - name: Download VM IP
-        uses: actions/download-artifact@v4
-        with:
-          name: vm-ip
-          path: ./
-      # Вычленим IP вмки
-      - name: Read VM IP
-        id: read_ip
-        run: |
-          IP=$(cat infrastructure/vm/vm_ip.txt)
-          echo "HOST_IP=$IP" >> $GITHUB_ENV
 
       - name: Run tests
         run:  cd backend && pytest ../tests

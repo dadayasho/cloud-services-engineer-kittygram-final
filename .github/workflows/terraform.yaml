@@ -12,6 +12,7 @@ on:
         - apply
         - destroy
 
+
 env:
   TF_VERSION: '1.14.6'
   YC_CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}
@@ -20,6 +21,8 @@ env:
 
 jobs:
   terraform:
+    outputs:
+      vm_ip: ${{ steps.vm_ip.outputs.IP }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -54,32 +57,31 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: ru-central1
-        
       run: |
         cd infrastructure/vm
         terraform apply -auto-approve -var="cloud_id=${{ env.YC_CLOUD_ID }}" -var="folder_id=${{ env.YC_FOLDER_ID }}" -var="token=${{ env.YC_TOKEN }}"
         
     - name: Extract VM IP
       id: vm_ip
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: ru-central1
-        YC_CLOUD_ID: ${{ secrets.YC_CLOUD_ID }}     
-        YC_FOLDER_ID: ${{ secrets.YC_FOLDER_ID }}  
-        YC_TOKEN: ${{ secrets.YC_TOKEN }}
       if: inputs.action == 'apply'
       run: |
         cd infrastructure/vm
         IP=$(terraform output -raw ip_address)
-        echo $IP > ./vm_ip.txt
+        echo "IP=$IP" >> $GITHUB_OUTPUT
+        echo "VM IP = $IP"
 
-    - name: Upload VM IP Artifact
+    - name: Trigger Deploy Workflow
       if: inputs.action == 'apply'
-      uses: actions/upload-artifact@v4
+      uses: peter-evans/repository-dispatch@v4
       with:
-        name: vm-ip
-        path: infrastructure/vm/vm_ip.txt
+        token: ${{ secrets.PAT }}
+        event-type: deploy
+        client-payload: |
+          {
+            "vm_ip": "${{ steps.vm_ip.outputs.IP }}",
+            "sha": "${{ github.sha }}",
+            "ref": "${{ github.ref }}"
+          }
     
     - name: Terraform Destroy
       if: inputs.action == 'destroy'
