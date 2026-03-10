@@ -78,7 +78,7 @@ jobs:
       - name: Read VM IP
         id: read_ip
         run: |
-          IP=$(cat ./vm_ip.txt)
+          IP=$(cat infrastructure/vm/vm_ip.txt)
           echo "HOST_IP=$IP" >> $GITHUB_ENV
       # Копируем docker-compose.production.yml на продакшен-сервер:
       - name: Copy docker-compose.yml via ssh
@@ -150,7 +150,7 @@ jobs:
       - name: Read VM IP
         id: read_ip
         run: |
-          IP=$(cat ./vm_ip.txt)
+          IP=$(cat infrastructure/vm/vm_ip.txt)
           echo "HOST_IP=$IP" >> $GITHUB_ENV
 
       - name: Run tests
