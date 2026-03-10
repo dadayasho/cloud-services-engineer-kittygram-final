@@ -103,13 +103,13 @@ jobs:
             DB_PORT=5432
             SECRET_KEY = ${{ secrets.DJANGO_SECRET_KEY }}
             DEBUG = True
-            ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0, ${{ env.HOST_IP}}
+            ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0, ${{ env.HOST_IP }}
             EOF
 
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ env.HOST_IP}}
+          host: ${{ env.HOST_IP }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
