@@ -1,7 +1,8 @@
+name: Deploy
 on:
-  push:
-    branches:
-      - main
+
+  repository_dispatch:
+    types: [deploy]
 
 
 jobs:
@@ -55,7 +56,8 @@ jobs:
             cd nginx
             docker build . -t tonysoprano228/kittygram_gateway
             docker push tonysoprano228/kittygram_gateway
-
+            
+ 
   deploy_to_server:
     runs-on: ubuntu-latest
     needs: 
@@ -64,20 +66,50 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+      
+      - name: Get VM IP from Terraform
+        run: |
+          echo "HOST_IP=${{ github.event.client_payload.vm_ip }}" >> $GITHUB_ENV
+          echo "SHA: ${{ github.event.client_payload.sha }}"
+          echo "Ref: ${{ github.event.client_payload.ref }}"
+      
       # Копируем docker-compose.production.yml на продакшен-сервер:
       - name: Copy docker-compose.yml via ssh
         uses: appleboy/scp-action@master
       # Передаём параметры для action appleboy/scp-action:
         with:
-          host: ${{ secrets.HOST }}
+          host: ${{ env.HOST_IP}}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           source: "docker-compose.production.yml"
           target: "kittygram"
+
+      - name: Add .env to deploy_to_server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.HOST_IP}}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            cd kittygram
+
+            cat > .env << EOF
+            POSTGRES_DB=kittygram
+            POSTGRES_USER= ${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD= ${{ secrets.POSTGRES_PASSWORD }}
+            DB_NAME=kittygram
+            DB_HOST=postgres
+            DB_PORT=5432
+            SECRET_KEY = '${{ secrets.DJANGO_SECRET }}'
+            DEBUG = True
+            ALLOWED_HOSTS='localhost,127.0.0.1,0.0.0.0,${{ env.HOST_IP }}'
+            EOF
+
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST }}
+          host: ${{ env.HOST_IP }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
@@ -91,7 +123,7 @@ jobs:
             
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
-  
+            sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
   tests:
     runs-on: ubuntu-latest
     needs:
@@ -99,8 +131,18 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
+
       - name: Install pytest
         run: pip install pytest
+
+      - name: Get VM IP from Terraform
+        run: |
+          echo "HOST_IP=${{ github.event.client_payload.vm_ip }}" >> $GITHUB_ENV
+          echo "SHA: ${{ github.event.client_payload.sha }}"
+          echo "Ref: ${{ github.event.client_payload.ref }}"
+
+      - name: Replace IP in tests.yml
+        run: sed -i "s|HOST_IP|${{ env.HOST_IP }}|g" tests.yml
 
       - name: Run tests
         run:  cd backend && pytest ../tests
